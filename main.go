@@ -8,35 +8,42 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/silverspase/k8s-prod-service/internal/handlers"
-	"github.com/silverspase/k8s-prod-service/internal/version"
+	"github.com/silverspase/k8s-prod-service/internal"
+	"github.com/silverspase/k8s-prod-service/internal/metadata/version"
+	"github.com/silverspase/k8s-prod-service/internal/todo/repository/memory"
+	gorilla "github.com/silverspase/k8s-prod-service/internal/todo/transport/gorilla-mux"
+	"github.com/silverspase/k8s-prod-service/internal/todo/usecase"
+	"go.uber.org/zap"
 )
 
 const defaultPort = "8000"
 
 func main() {
-	log.Printf(
-		"Starting the service...\n commit: %s, build time: %s, release: %s",
-		version.Commit, version.BuildTime, version.Release,
-	)
+	logger, _ := zap.NewProduction()
+
+	log.Printf("Starting the service...\n commit: %s, build time: %s, release: %s",
+		version.Commit, version.BuildTime, version.Release)
 
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = defaultPort
 	}
 
-	r := handlers.Router(version.BuildTime, version.Commit, version.Release)
+	repo := memory.NewMemoryStorage(logger)
+	useCase := usecase.NewItemUseCase(logger, repo)
+	transport := gorilla.NewTransport(logger, useCase)
+	server := internal.NewServer(logger, transport)
+	router := server.GorillaMuxRouter(version.BuildTime, version.Commit, version.Release)
 
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
 
 	srv := &http.Server{
 		Addr:    ":" + port,
-		Handler: r,
+		Handler: router,
 	}
 
-	// this channel is for graceful shutdown:
-	// if we receive an error, we can send it here to notify the server to be stopped
+	// graceful shutdown:
 	shutdown := make(chan struct{}, 1)
 	go func() {
 		err := srv.ListenAndServe()
