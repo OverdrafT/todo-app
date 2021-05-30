@@ -2,5 +2,8 @@
 .idea
 
 # binary files
-main.exe
+*.exe
 main
+
+# env file
+.env

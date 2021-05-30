@@ -5,12 +5,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/gorilla/mux"
 	"go.uber.org/zap"
 
-	"github.com/silverspase/k8s-prod-service/internal/todo"
-	"github.com/silverspase/k8s-prod-service/internal/todo/model"
+	"github.com/silverspase/todo/internal/todo"
+	"github.com/silverspase/todo/internal/todo/model"
 )
 
 type transport struct {
@@ -26,7 +27,7 @@ func NewTransport(logger *zap.Logger, useCase todo.UseCase) todo.Transport {
 }
 
 func (t *transport) CreateItem(w http.ResponseWriter, r *http.Request) {
-	t.logger.Info("transport.CreateItems")
+	t.logger.Debug("transport.CreateItem")
 	ctx := context.Background()
 	defer r.Body.Close()
 
@@ -47,10 +48,24 @@ func (t *transport) CreateItem(w http.ResponseWriter, r *http.Request) {
 }
 
 func (t *transport) GetAllItems(w http.ResponseWriter, r *http.Request) {
-	t.logger.Info("transport.GetAllItems")
+	t.logger.Debug("GetAllItems")
 	ctx := context.Background()
 
-	items, err := t.useCase.GetAllItems(ctx)
+	var page int
+	var err error
+
+	pageStr := r.FormValue("page")
+	if pageStr == "" {
+		page = 1
+	} else {
+		page, err = strconv.Atoi(pageStr)
+		if err != nil {
+			respondWithJSON(w, http.StatusBadRequest, map[string]string{"error": "page param is not a number"})
+			return
+		}
+	}
+
+	items, err := t.useCase.GetAllItems(ctx, page)
 	if err != nil {
 		respondWithJSON(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
 		return
@@ -60,7 +75,7 @@ func (t *transport) GetAllItems(w http.ResponseWriter, r *http.Request) {
 }
 
 func (t *transport) GetItem(w http.ResponseWriter, r *http.Request) {
-	t.logger.Info("transport.GetItem")
+	t.logger.Debug("GetItem")
 	ctx := context.Background()
 
 	params := mux.Vars(r)
@@ -69,9 +84,9 @@ func (t *transport) GetItem(w http.ResponseWriter, r *http.Request) {
 		respondWithJSON(w, http.StatusBadRequest, map[string]string{"error": "missed id path param"})
 		return
 	}
-	item, ok := t.useCase.GetItem(ctx, id)
-	if !ok {
-		respondWithJSON(w, http.StatusNotFound, map[string]string{"error": fmt.Sprintf("item with id %v not found", id)})
+	item, err := t.useCase.GetItem(ctx, id)
+	if err != nil {
+		respondWithJSON(w, http.StatusInternalServerError, map[string]string{"error": fmt.Sprintf("item with id %v not found", id)})
 		return
 	}
 
@@ -79,7 +94,7 @@ func (t *transport) GetItem(w http.ResponseWriter, r *http.Request) {
 }
 
 func (t *transport) UpdateItem(w http.ResponseWriter, r *http.Request) {
-	t.logger.Info("transport.UpdateItem")
+	t.logger.Debug("UpdateItem")
 	ctx := context.Background()
 	defer r.Body.Close()
 
@@ -108,7 +123,7 @@ func (t *transport) UpdateItem(w http.ResponseWriter, r *http.Request) {
 }
 
 func (t *transport) DeleteItem(w http.ResponseWriter, r *http.Request) {
-	t.logger.Info("transport.DeleteItem")
+	t.logger.Debug("DeleteItem")
 	ctx := context.Background()
 
 	params := mux.Vars(r)

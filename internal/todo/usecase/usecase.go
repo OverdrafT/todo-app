@@ -5,8 +5,8 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/silverspase/k8s-prod-service/internal/todo"
-	"github.com/silverspase/k8s-prod-service/internal/todo/model"
+	"github.com/silverspase/todo/internal/todo"
+	"github.com/silverspase/todo/internal/todo/model"
 )
 
 type itemUseCase struct {
@@ -25,11 +25,11 @@ func (i itemUseCase) CreateItem(ctx context.Context, item model.Item) (string, e
 	return i.repo.CreateItem(ctx, item)
 }
 
-func (i itemUseCase) GetAllItems(ctx context.Context) ([]model.Item, error) {
-	return i.repo.GetAllItems(ctx)
+func (i itemUseCase) GetAllItems(ctx context.Context, page int) ([]model.Item, error) {
+	return i.repo.GetAllItems(ctx, page)
 }
 
-func (i itemUseCase) GetItem(ctx context.Context, id string) (model.Item, bool) {
+func (i itemUseCase) GetItem(ctx context.Context, id string) (model.Item, error) {
 	return i.repo.GetItem(ctx, id)
 }
 

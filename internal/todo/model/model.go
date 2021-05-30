@@ -1,6 +1,8 @@
 package model
 
 type Item struct {
-	ID    string `json:"id,omitempty"`
-	Title string `json:"title,omitempty"`
+	ID        string `json:"-"`
+	Title     string `json:"title,omitempty"`
+	IsDeleted bool   `json:"-"`
+	CreatedAt string `json:"-"`
 }

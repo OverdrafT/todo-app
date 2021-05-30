@@ -9,8 +9,8 @@ import (
 	"github.com/gorilla/mux"
 	"go.uber.org/zap"
 
-	meta "github.com/silverspase/k8s-prod-service/internal/metadata/transport/gorilla-mux"
-	"github.com/silverspase/k8s-prod-service/internal/todo"
+	meta "github.com/silverspase/todo/internal/metadata/transport/gorilla-mux"
+	"github.com/silverspase/todo/internal/todo"
 )
 
 type server struct {
@@ -36,7 +36,7 @@ func (s server) GorillaMuxRouter(buildTime, commit, release string) *mux.Router 
 		log.Printf("Ready probe is positive.")
 	}()
 
-	r := mux.NewRouter()
+	r := mux.NewRouter().StrictSlash(true)
 	r.HandleFunc("/", meta.GetMetaData(buildTime, commit, release)).Methods(http.MethodGet)
 	r.HandleFunc("/health", meta.HealthCheck)
 	r.HandleFunc("/readiness", meta.Readiness(s.isReady))

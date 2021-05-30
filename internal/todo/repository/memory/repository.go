@@ -7,12 +7,13 @@ import (
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 
-	"github.com/silverspase/k8s-prod-service/internal/todo"
-	"github.com/silverspase/k8s-prod-service/internal/todo/model"
+	"github.com/silverspase/todo/internal/todo"
+	"github.com/silverspase/todo/internal/todo/model"
 )
 
 type memoryStorage struct {
-	items  map[string]model.Item // TODO change to sync.Map
+	items map[string]model.Item // TODO change to sync.Map
+	// itemsArray []model.Item // TODO use this for pagination in GetAllItems
 	logger *zap.Logger
 }
 
@@ -24,13 +25,14 @@ func NewMemoryStorage(logger *zap.Logger) todo.Repository {
 }
 
 func (m memoryStorage) CreateItem(ctx context.Context, item model.Item) (string, error) {
+	m.logger.Debug("CreateItem")
 	item.ID = uuid.New().String()
 	m.items[item.ID] = item
 
 	return item.ID, nil
 }
 
-func (m memoryStorage) GetAllItems(ctx context.Context) (res []model.Item, err error) {
+func (m memoryStorage) GetAllItems(ctx context.Context, page int) (res []model.Item, err error) {
 	for _, item := range m.items {
 		res = append(res, item)
 	}
@@ -38,9 +40,14 @@ func (m memoryStorage) GetAllItems(ctx context.Context) (res []model.Item, err e
 	return res, nil
 }
 
-func (m memoryStorage) GetItem(ctx context.Context, id string) (model.Item, bool) {
+func (m memoryStorage) GetItem(ctx context.Context, id string) (model.Item, error) {
+	m.logger.Debug("GetItem")
 	item, ok := m.items[id]
-	return item, ok
+	if !ok {
+		return item, errors.New("not found")
+	}
+
+	return item, nil
 }
 
 func (m memoryStorage) UpdateItem(ctx context.Context, item model.Item) (string, error) {
