@@ -4,11 +4,10 @@ import (
 	"context"
 	"errors"
 
-	"github.com/google/uuid"
 	"go.uber.org/zap"
 
-	"github.com/silverspase/todo/internal/todo"
-	"github.com/silverspase/todo/internal/todo/model"
+	"github.com/silverspase/todo/internal/modules/todo"
+	"github.com/silverspase/todo/internal/modules/todo/model"
 )
 
 type memoryStorage struct {
@@ -26,7 +25,6 @@ func NewMemoryStorage(logger *zap.Logger) todo.Repository {
 
 func (m memoryStorage) CreateItem(ctx context.Context, item model.Item) (string, error) {
 	m.logger.Debug("CreateItem")
-	item.ID = uuid.New().String()
 	m.items[item.ID] = item
 
 	return item.ID, nil

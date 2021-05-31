@@ -1,15 +1,17 @@
-package postgres
+package sql
 
 import (
-	"database/sql"
 	"errors"
 	"fmt"
 	"log"
 
 	"go.uber.org/zap"
+	"gorm.io/driver/postgres"
+	_ "gorm.io/driver/postgres"
+	"gorm.io/gorm"
 
 	"github.com/silverspase/todo/internal/config"
-	"github.com/silverspase/todo/internal/todo"
+	"github.com/silverspase/todo/internal/modules/todo/model"
 )
 
 const (
@@ -17,12 +19,7 @@ const (
 	PORT = 5432
 )
 
-type postgres struct {
-	conn   *sql.DB
-	logger *zap.Logger
-}
-
-func NewPostgres(logger *zap.Logger, cfg config.Config) (todo.Repository, error) {
+func NewConn(logger *zap.Logger, cfg config.Config) (*gorm.DB, error) {
 	if cfg.Username == "" {
 		return nil, errors.New("env var POSTGRES_USER not set")
 	}
@@ -38,24 +35,21 @@ func NewPostgres(logger *zap.Logger, cfg config.Config) (todo.Repository, error)
 	dsn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
 		HOST, PORT, cfg.Username, cfg.Password, cfg.DB)
 
-	conn, err := sql.Open("postgres", dsn)
+	conn, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
-		logger.Error("failed to exec sql.Open function")
+		logger.Error("failed to exec gorm.Open function")
 		return nil, err
 	}
 
-	db := postgres{
-		conn:   conn,
-		logger: logger,
-	}
+	logger.Info("Migrating", zap.String("model", "Item"))
 
-	err = db.conn.Ping()
+	err = conn.AutoMigrate(&model.Item{})
 	if err != nil {
-		logger.Error("failed to ping db")
-		return db, err
+		logger.Error("Error during migrating Item struct", zap.Error(err))
+		return nil, err
 	}
 
 	log.Println("database connection established")
 
-	return db, nil
+	return conn, nil
 }

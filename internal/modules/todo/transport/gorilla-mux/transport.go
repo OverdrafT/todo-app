@@ -10,8 +10,8 @@ import (
 	"github.com/gorilla/mux"
 	"go.uber.org/zap"
 
-	"github.com/silverspase/todo/internal/todo"
-	"github.com/silverspase/todo/internal/todo/model"
+	"github.com/silverspase/todo/internal/modules/todo"
+	"github.com/silverspase/todo/internal/modules/todo/model"
 )
 
 type transport struct {
@@ -84,9 +84,10 @@ func (t *transport) GetItem(w http.ResponseWriter, r *http.Request) {
 		respondWithJSON(w, http.StatusBadRequest, map[string]string{"error": "missed id path param"})
 		return
 	}
+
 	item, err := t.useCase.GetItem(ctx, id)
 	if err != nil {
-		respondWithJSON(w, http.StatusInternalServerError, map[string]string{"error": fmt.Sprintf("item with id %v not found", id)})
+		respondWithJSON(w, http.StatusInternalServerError, map[string]string{"error": fmt.Sprintf("unable to get item with id %v: %v", id, err)})
 		return
 	}
 

@@ -5,8 +5,8 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/silverspase/todo/internal/todo"
-	"github.com/silverspase/todo/internal/todo/model"
+	"github.com/silverspase/todo/internal/modules/todo"
+	"github.com/silverspase/todo/internal/modules/todo/model"
 )
 
 type itemUseCase struct {
