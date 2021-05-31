@@ -8,11 +8,11 @@ import (
 )
 
 type Item struct {
-	ID        string     `json:"-" gorm:"primaryKey"`
-	Title     string     `json:"title,omitempty"`
-	CreatedAt time.Time  `json:"-"`
-	UpdatedAt time.Time  `json:"-"`
-	DeletedAt *time.Time `json:"-" sql:"index"`
+	ID        string         `json:"-" gorm:"primaryKey"`
+	Title     string         `json:"title,omitempty"`
+	CreatedAt time.Time      `json:"-"`
+	UpdatedAt time.Time      `json:"-"`
+	DeletedAt gorm.DeletedAt `json:"-" sql:"index"`
 }
 
 // BeforeCreate will set a UUID rather than numeric ID.
