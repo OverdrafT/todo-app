@@ -25,8 +25,8 @@ import (
 )
 
 type App struct {
-	TodoT todo.Transport
-	AuthT auth.Transport
+	Todo todo.Transport
+	Auth auth.Transport
 
 	Srv     *http.Server
 	Logger  *zap.Logger
@@ -47,8 +47,8 @@ func Init() (*App, error) {
 	}
 
 	application := &App{
-		TodoT:  initTodoModule(cfg, logger, sqlConn),
-		AuthT:  initAuthModule(cfg, logger, sqlConn),
+		Todo:   initTodoModule(cfg, logger, sqlConn),
+		Auth:   initAuthModule(cfg, logger, sqlConn),
 		Logger: logger,
 		Cfg:    cfg,
 	}

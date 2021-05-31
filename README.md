@@ -1,5 +1,10 @@
 # todo-app
+Work in progress
+
 Production ready service with Clean Architecture approach
+
+## Improvements
+- Add metadata like version, build, commit
 
 ## Questions
 - Now Create operation returns Item's ID if created. Should it return the whole Item?

@@ -8,14 +8,14 @@ import (
 )
 
 type User struct {
-	ID        string     `json:"-" gorm:"primaryKey"`
-	Name      string     `json:"name,omitempty"`
-	Email     string     `json:"email,omitempty" gorm:"type:varchar(100);unique_index"`
-	Gender    string     `json:"gender"`
-	Password  string     `json:"password"`
-	CreatedAt time.Time  `json:"-"`
-	UpdatedAt time.Time  `json:"-"`
-	DeletedAt *time.Time `json:"-" sql:"index"`
+	ID        string         `json:"-" gorm:"primaryKey"`
+	Name      string         `json:"name,omitempty"`
+	Email     string         `json:"email,omitempty" gorm:"type:varchar(100);unique_index"`
+	Gender    string         `json:"gender"`
+	Password  string         `json:"-"`
+	CreatedAt time.Time      `json:"-"`
+	UpdatedAt time.Time      `json:"-"`
+	DeletedAt gorm.DeletedAt `json:"-" sql:"index"`
 }
 
 func (i *User) BeforeCreate(tx *gorm.DB) error {

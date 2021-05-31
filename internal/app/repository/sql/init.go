@@ -11,6 +11,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/silverspase/todo/internal/config"
+	model2 "github.com/silverspase/todo/internal/modules/auth/model"
 	"github.com/silverspase/todo/internal/modules/todo/model"
 )
 
@@ -43,7 +44,7 @@ func NewConn(logger *zap.Logger, cfg config.Config) (*gorm.DB, error) {
 
 	logger.Info("Migrating", zap.String("model", "Item"))
 
-	err = conn.AutoMigrate(&model.Item{})
+	err = conn.AutoMigrate(&model.Item{}, model2.User{})
 	if err != nil {
 		logger.Error("Error during migrating Item struct", zap.Error(err))
 		return nil, err
